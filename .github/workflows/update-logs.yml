@@ -1,0 +1,30 @@
+name: Update Logs
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+
+jobs:
+  update-logs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Fetch logs from Elasticsearch
+      run: |
+        curl -X GET "https://test-soc.kb.us-central1.gcp.cloud.es.io:9243/.ds-kibana_sample_data_logs-2024.06.26-000001//_search?pretty" -H 'Content-Type: application/json' -H 'Authorization: Basic ZWxhc3RpYzp4bnJBREMwMXRiQUg2S3ZSUEZvUHhwQlQ=' -d'
+        {
+          "query": {
+            "match_all": {}
+          }
+        }
+        ' > logs.json
+
+    - name: Commit and push logs
+      run: |
+        git config --global user.name 'sohamwaglekar@gmail.com'
+        git config --global user.email 'sohamwaglekar'
+        git add logs.json
+        git commit -m "Update logs"
+        git push
